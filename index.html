@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Generate LaunchDarkly ID</title>
+<link rel="icon" type="image/png" href="icon.png" />
+<script src="https://cdn.jsdelivr.net/npm/uuid@8.3.2/dist/umd/uuidv5.min.js"></script>
+<style>
+  :root {
+    --bg: #0f172a;
+    --panel: #1e293b;
+    --border: #334155;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #22c55e;
+    --accent-hover: #16a34a;
+    --danger: #f87171;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 32px 16px;
+  }
+  .container {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 22px;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .title-icon {
+    width: 28px;
+    height: 28px;
+  }
+  p.subtitle {
+    color: var(--muted);
+    margin-top: 0;
+    margin-bottom: 24px;
+    font-size: 14px;
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+  .row {
+    margin-bottom: 16px;
+  }
+  .row:last-child {
+    margin-bottom: 0;
+  }
+  input[type="text"] {
+    width: 100%;
+    background: #0b1220;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+  button {
+    background: var(--accent);
+    color: #06210f;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 4px;
+  }
+  button:hover { background: var(--accent-hover); }
+  button:disabled {
+    background: #475569;
+    color: #94a3b8;
+    cursor: not-allowed;
+  }
+  #error {
+    color: var(--danger);
+    font-size: 13px;
+  }
+  .result-wrap {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+  }
+  #result {
+    flex: 1;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+    padding: 10px 12px;
+    background: #0b1220;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--accent);
+    word-break: break-all;
+  }
+  #copyBtn {
+    margin-top: 0;
+    flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1><img src="icon.png" alt="" class="title-icon" />Generate LaunchDarkly ID</h1>
+  <p class="subtitle">Enter a Business ID and User ID to generate the corresponding LaunchDarkly UUID. Everything runs locally in your browser — nothing is uploaded anywhere.</p>
+
+  <div class="panel">
+    <div class="row">
+      <label for="businessId">Business ID</label>
+      <input type="text" id="businessId" />
+    </div>
+
+    <div class="row">
+      <label for="userId">User ID</label>
+      <input type="text" id="userId" />
+    </div>
+
+    <div class="row">
+      <button id="generateBtn">Generate LaunchDarkly ID</button>
+    </div>
+
+    <div id="error" class="row"></div>
+
+    <div class="row" id="resultRow" style="display: none;">
+      <label>LaunchDarkly ID</label>
+      <div class="result-wrap">
+        <div id="result"></div>
+        <button id="copyBtn" type="button">Copy</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const LD_UUID_NAMESPACE = '15d957d2-747e-48e6-98ec-fe8940d4ed81';
+
+  const businessIdInput = document.getElementById('businessId');
+  const userIdInput = document.getElementById('userId');
+  const generateBtn = document.getElementById('generateBtn');
+  const errorEl = document.getElementById('error');
+  const resultRow = document.getElementById('resultRow');
+  const resultEl = document.getElementById('result');
+  const copyBtn = document.getElementById('copyBtn');
+
+  function getHashedUUID(userId, businessId) {
+    const combinedIds = `${userId}-${businessId}`;
+    return uuidv5(combinedIds.toLowerCase(), LD_UUID_NAMESPACE);
+  }
+
+  generateBtn.addEventListener('click', () => {
+    errorEl.textContent = '';
+    resultRow.style.display = 'none';
+
+    const businessId = businessIdInput.value.trim();
+    const userId = userIdInput.value.trim();
+
+    if (!businessId || !userId) {
+      errorEl.textContent = 'Please enter both a Business ID and a User ID.';
+      return;
+    }
+
+    resultEl.textContent = getHashedUUID(userId, businessId);
+    resultRow.style.display = 'block';
+    copyBtn.textContent = 'Copy';
+  });
+
+  copyBtn.addEventListener('click', () => {
+    navigator.clipboard.writeText(resultEl.textContent).then(() => {
+      copyBtn.textContent = 'Copied!';
+      setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1500);
+    });
+  });
+</script>
+</body>
+</html>
